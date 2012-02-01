@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="csdd-csn-b-test-downloader">
+
+    <property name="mvn.repo" value="${user.home}\.m2\repository"/>
+    <property name="derby.ver" value="10.8.2.2"/>
+    <property name="jsoup.ver" value="1.6.1"/>
+    <property name="servlet.api" value="2.3"/>
+    <property name="slf4j.ver" value="1.6.3"/>
+    <property name="log4j.ver" value="1.2.16"/>
+
+    <path id="classpath">
+        <fileset dir="${mvn.repo}\org\apache\derby\derby\${derby.ver}">
+            <include name="derby-${derby.ver}.jar"/>
+        </fileset>
+        <fileset dir="${mvn.repo}\org\apache\derby\derbyclient\${derby.ver}">
+            <include name="derbyclient-${derby.ver}.jar"/>
+        </fileset>
+        <fileset dir="${mvn.repo}\org\apache\derby\derbynet\${derby.ver}">
+            <include name="derbynet-${derby.ver}.jar"/>
+        </fileset>
+        <fileset dir="${mvn.repo}\org\jsoup\jsoup\${jsoup.ver}">
+            <include name="jsoup-${jsoup.ver}.jar"/>
+        </fileset>
+        <fileset dir="${mvn.repo}\javax\servlet\servlet-api\${servlet.api}">
+            <include name="servlet-api-${servlet.api}.jar"/>
+        </fileset>
+        <fileset dir="${mvn.repo}\org\slf4j\slf4j-api\${slf4j.ver}">
+            <include name="slf4j-api-${slf4j.ver}.jar"/>
+        </fileset>
+        <fileset dir="${mvn.repo}\org\slf4j\slf4j-log4j12\${slf4j.ver}">
+            <include name="slf4j-log4j12-${slf4j.ver}.jar"/>
+        </fileset>
+        <fileset dir="${mvn.repo}\org\slf4j\jcl-over-slf4j\${slf4j.ver}">
+            <include name="jcl-over-slf4j-${slf4j.ver}.jar"/>
+        </fileset>
+        <fileset dir="${mvn.repo}\log4j\log4j\${log4j.ver}">
+            <include name="log4j-${log4j.ver}.jar"/>
+        </fileset>
+    </path>
+
+    <tstamp>
+        <format property="today.full" pattern="yyyy-MM-dd HH:mm:ss"/>
+        <format property="today.file" pattern="yyyyMMdd_HHmm"/>
+    </tstamp>
+    <buildnumber file="build.num"/>
+    <property name="version.num" value="01"/>
+    <dirname property="dir.base" file="${ant.file}"/>
+    <property name="dir.run" value="${dir.base}/target"/>
+    <property name="dir.output.class" value="${dir.base}/target/classes"/>
+    <property name="jar.file" value="Crawler${version.num}-b${build.number}.jar"/>
+    <property name="deploy.path" value="C:\Users\oskars\Dropbox"/>
+    <property name="deploy.dir" value="CSDD-CSN-B-Test-Downloader"/>
+    <property name="log.config" value="log4j.properties"/>
+    <property name="prg.config" value="prg.properties"/>
+
+    <pathconvert targetos="windows" property="classpath.list" refid="classpath" dirsep=" " pathsep=" ">
+        <map from="${mvn.repo}\org\apache\derby\derby\${derby.ver}\" to="lib/"/>
+        <map from="${mvn.repo}\org\apache\derby\derbyclient\${derby.ver}\" to="lib/"/>
+        <map from="${mvn.repo}\org\apache\derby\derbynet\${derby.ver}\" to="lib/"/>
+        <map from="${mvn.repo}\org\jsoup\jsoup\${jsoup.ver}\" to="lib/"/>
+        <map from="${mvn.repo}\javax\servlet\servlet-api\${servlet.api}\" to="lib/"/>
+        <map from="${mvn.repo}\org\slf4j\slf4j-api\${slf4j.ver}\" to="lib/"/>
+        <map from="${mvn.repo}\org\slf4j\slf4j-log4j12\${slf4j.ver}\" to="lib/"/>
+        <map from="${mvn.repo}\org\slf4j\jcl-over-slf4j\${slf4j.ver}\" to="lib/"/>
+        <map from="${mvn.repo}\log4j\log4j\${log4j.ver}\" to="lib/"/>
+    </pathconvert>
+
+    <echo>${classpath.list}</echo>
+    <echo>${version.num}-b${build.number}"</echo>
+
+    <path id="sourcepath">
+        <dirset dir="${basedir}">
+            <include name="src/main"/>
+            <exclude name="src/test"/>
+        </dirset>
+    </path>
+
+    <target name="compile" depends="clear" description="Compile module CSDD-CSN-B-Test-Downloader; production classes">
+        <mkdir dir="${dir.output.class}"/>
+
+        <javac destdir="${dir.output.class}" debug="on" nowarn="off"
+               memorymaximumsize="128m" fork="true">
+            <classpath refid="classpath"/>
+            <src refid="sourcepath"/>
+        </javac>
+
+        <mkdir dir="${dir.run}"/>
+
+        <jar destfile="${dir.run}/${jar.file}"
+             basedir="${dir.output.class}"
+             includes="**/*.class">
+            <manifest>
+                <attribute name="Main-Class" value="com.bla.laa.Main"/>
+                <attribute name="Class-Path" value=". ${classpath.list}"/>
+                <attribute name="Implementation-Version" value="${version.num}-b${build.number}"/>
+                <attribute name="Built-Date" value="${today.full}"/>
+            </manifest>
+        </jar>
+
+        <mkdir dir="${dir.run}/lib"/>
+
+        <copy todir="${dir.run}/lib" verbose="true">
+            <path refid="classpath"/>
+        </copy>
+
+        <copy file="${basedir}/${prg.config}" tofile="${dir.run}/${prg.config}" verbose="true"/>
+        <copy file="${basedir}/${log.config}" tofile="${dir.run}/${log.config}" verbose="true"/>
+
+        <echo file="${dir.run}/startCrawler.bat" force="true">java -jar ${jar.file} StartCrawler${line.separator}pause
+        </echo>
+        <echo file="${dir.run}/startDerby.bat" force="true">java -jar ${jar.file} StartDdbServ${line.separator}pause
+        </echo>
+        <echo file="${dir.run}/printAllQuest.bat" force="true">java -jar ${jar.file} PrintAll${line.separator}pause
+        </echo>
+        <echo file="${dir.run}/printOneAnswer.bat" force="true">java -jar ${jar.file} printOneAnswer
+            xxx${line.separator}pause
+        </echo>
+        <delete dir="${dir.output.class}" verbose="on"/>
+    </target>
+    <target name="clear">
+        <delete dir="${deploy.path}\${deploy.dir}" verbose="on"/>
+    </target>
+    <target name="deploy" depends="compile">
+        <mkdir dir="${deploy.path}\${deploy.dir}"/>
+        <copydir src="${dir.run}" dest="${deploy.path}\${deploy.dir}"/>
+    </target>
+
+    <target name="copyLog4j">
+        <copy file="${dir.base}\${log.config}" todir="${dir.base}\out\production\Crawler\" verbose="on"/>
+    </target>
+</project>

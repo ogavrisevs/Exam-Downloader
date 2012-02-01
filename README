@@ -1,0 +1,20 @@
+CSDD CSN Test Downloader
+-----------------------------------------------------
+Small program for downloading and storing on local derby db, B type driving license exam questions.
+Program is created for educational purposes for testing web crawling and html parsing.
+
++---------------------------------------------------+
+|            USE AT YOUR OWN RISK !!!!              |
+| copyrights of exam materials can be violated      |
++---------------------------------------------------+
+
+Teh. stack :
+   * Multi thread Java
+   * java.net.* for http POST, GET (cookies support) (proxy support)
+   * Jsoup and javax.swing.text for html parsing
+   * Apache Derby for storing data
+   * Apache Ant build targets
+   * Maven for lib dependency
+   * log4j and slf4j for logging
+   * Jetty web server for serving JSON data
+   * Junit for testing
